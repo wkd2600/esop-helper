@@ -4,67 +4,65 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>우리사주 간이계산기 Beta</title>
-  <meta name="description" content="우리사주조합 인출 시 근로소득 과세액을 여러 취득 로트를 한 번에 계산합니다." />
+  <meta name="description" content="우리사주 인출 시 세후가치·순이익(근사)까지 계산하는 멀티-로트 계산기" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    input.num { text-align:right; font-variant-numeric: tabular-nums; }
-    input.num::placeholder { color:#9ca3af; }
-    input[disabled] { background-color:#ecfdf5 !important; color:#6b7280 !important; cursor:not-allowed; }
     body { font-family: 'Pretendard','Apple SD Gothic Neo',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,'Noto Sans',sans-serif; }
-    .cute-focus { outline: none; }
-    .cute-focus:focus { box-shadow: 0 0 0 3px rgba(16,185,129,0.25); border-color:#34d399; }
-    .mint-card { border-radius: 1.25rem; border:1px solid #a7f3d0; background: rgba(255,255,255,0.92); box-shadow: 0 8px 20px rgba(16,185,129,0.08); }
-    .mint-btn { border-radius: 9999px; padding: .35rem .7rem; font-size: 0.75rem; font-weight: 600; transition: .15s ease; }
-    .mint-btn-ghost { background:white; border:1px solid #a7f3d0; color:#065f46; }
-    .sec-title { color:#047857; }
-    .tbl th, .tbl td { border-bottom:1px solid #d1fae5; }
-    .icon-btn { border: 1px solid #a7f3d0; border-radius: .65rem; padding: .25rem .5rem; }
+    input.num { text-align:right; font-variant-numeric: tabular-nums; }
+    input[disabled] { background:#ecfdf5!important; color:#6b7280!important; cursor:not-allowed; }
+    .cute-focus:focus { box-shadow: 0 0 0 3px rgba(16,185,129,.25); border-color:#34d399; outline:none; }
+    .mint-card { border-radius: 1.25rem; border:1px solid #a7f3d0; background: rgba(255,255,255,.94); box-shadow: 0 10px 24px rgba(16,185,129,.08); }
+    .mint-btn { border-radius:9999px; padding:.35rem .7rem; font-size:.8rem; font-weight:700; border:1px solid #a7f3d0; background:white; color:#065f46; }
+    .tbl th,.tbl td{ border-bottom:1px solid #d1fae5; }
   </style>
 </head>
-
 <body class="bg-emerald-50 text-gray-900">
   <header class="sticky top-0 z-10 bg-gradient-to-r from-emerald-200 to-emerald-100 backdrop-blur border-b border-emerald-300 shadow-sm">
     <div class="mx-auto max-w-6xl px-5 py-3 flex items-center justify-between">
-      <h1 class="text-lg font-extrabold text-emerald-800 tracking-tight">우리사주 간이계산기 <span class=\"text-xs text-emerald-700 align-top\">Beta</span><span class="text-xs text-emerald-700 align-top">멀티-로트</span>
+      <h1 class="text-lg font-extrabold text-emerald-800 tracking-tight">
+        우리사주 간이계산기 <span class="text-xs text-emerald-700 align-top">Beta</span>
       </h1>
-      <a href="#how" class="text-sm text-emerald-800 hover:text-emerald-900 transition">로직/주의사항 💡</a>
+      <a href="#how" class="text-sm text-emerald-800 hover:text-emerald-900">로직/주의사항 💡</a>
     </div>
     <div class="mx-auto max-w-6xl px-5 pb-3">
       <div class="rounded-2xl border border-emerald-300 bg-emerald-100/70 text-emerald-900 text-xs p-3 leading-5 shadow-sm">
         <span class="font-semibold">📋 준비물:</span>
-        직전연도 근로소득원천징수영수증, (있다면) 5월 종합소득세 신고내역, <span>각 로트별 취득일자·취득단가·인출주식수, 인출일자 및 인출시가</span>
+        우리사주 상세내역, 직전연도 근로소득원천징수영수증, (있다면) 종합소득세 신고내역
       </div>
     </div>
   </header>
 
   <main class="mx-auto max-w-6xl px-5 py-6 space-y-6">
-    <!-- TOP: 인출 로트 입력 (full width) -->
+    <!-- 인출 로트 입력 (Full width) -->
     <section class="mint-card p-5">
       <div class="flex items-center justify-between">
-        <h2 class="mb-3 text-lg font-semibold sec-title">인출 로트 입력 (여러 행 추가 가능) 📋</h2>
+        <h2 class="mb-3 text-lg font-semibold text-emerald-800">인출 로트 입력 (여러 행 추가 가능) 📋</h2>
         <div class="flex gap-2">
-          <button id="addRow" class="mint-btn mint-btn-ghost">+ 행 추가</button>
-          <button id="clearRows" class="mint-btn mint-btn-ghost">🧹 행 모두 삭제</button>
+          <button id="addRow" class="mint-btn">+ 행 추가</button>
+          <button id="clearRows" class="mint-btn">🧹 행 모두 삭제</button>
         </div>
       </div>
       <div class="overflow-auto">
-        <table class="w-full text-sm tbl">
+        <table class="w-full text-xs tbl">
           <thead class="text-emerald-800">
             <tr>
-              <th class="text-left px-2 py-2">#</th>
-              <th class="text-left px-2 py-2">취득일자</th>
-              <th class="text-right px-2 py-2">취득단가(원/주)</th>
-              <th class="text-right px-2 py-2">인출주식수(주)</th>
-              <th class="text-right px-2 py-2">보유기간(의무예탁 제외)</th>
-              <th class="text-right px-2 py-2">적용 비과세율</th>
-              <th class="text-right px-2 py-2">과세단가</th>
-              <th class="text-right px-2 py-2">과세 금액</th>
-              <th class="text-center px-2 py-2">작업</th>
+              <th class="text-left px-2 py-1.5">#</th>
+              <th class="text-left px-2 py-1.5">취득일자</th>
+              <th class="text-left px-2 py-1.5">출연구분</th>
+              <th class="text-right px-2 py-1.5">취득단가</th>
+              <th class="text-right px-2 py-1.5">실제 납입단가</th>
+              <th class="text-right px-2 py-1.5">인출주식수</th>
+              <th class="text-right px-2 py-1.5">보유기간(의무예탁 제외)</th>
+              <th class="text-right px-2 py-1.5">비과세율</th>
+              <th class="text-right px-2 py-1.5">과세단가</th>
+              <th class="text-right px-2 py-1.5">과세 금액</th>
+              <th class="text-center px-2 py-1.5">작업</th>
             </tr>
           </thead>
           <tbody id="lotBody"></tbody>
         </table>
       </div>
+
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
         <label class="grid grid-cols-1 gap-1">
           <span class="text-sm text-gray-700">의무예탁기간(공통)</span>
@@ -80,49 +78,44 @@
         <label class="grid grid-cols-1 gap-1">
           <span class="text-sm text-gray-700">인출일자 시가(공통)</span>
           <div class="flex items-center gap-2">
-            <input id="fmvAtWithdraw" type="text" class="num w-40 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" placeholder="0" value="0" />
+            <input id="fmvAtWithdraw" type="text" class="num w-40 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" value="0" />
             <span class="text-xs text-gray-500">원/주</span>
           </div>
         </label>
       </div>
-      <p class="text-xs text-emerald-700 mt-2">※ 각 행은 “같은 취득일·단가에서 인출하는 주식수”를 의미합니다.</p>
+      <p class="text-xs text-emerald-700 mt-2">※ 각 행은 동일 취득일·단가에서 인출하는 수량을 의미합니다.</p>
     </section>
 
-    <!-- MIDDLE: 2-column inputs -->
     <section class="grid grid-cols-1 gap-6 md:grid-cols-2">
-      <!-- 급여 정보 -->
+      <!-- 좌: 급여 & 공제 -->
       <div class="space-y-6">
         <div class="mint-card p-5">
-          <h2 class="mb-3 text-lg font-semibold sec-title">급여 정보 🧾</h2>
+          <h2 class="mb-3 text-lg font-semibold text-emerald-800">급여 정보 🧾</h2>
           <div class="space-y-2">
             <label class="flex items-center justify-between gap-3">
-              <span class="text-sm text-gray-700 whitespace-nowrap">직전연도 총급여액 (원) <span class="text-xs text-gray-500 whitespace-nowrap">(4대보험 근사)</span></span>
-              <input id="prevYearSalary" type="text" class="num w-56 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" placeholder="0" value="0" />
+              <span class="text-sm text-gray-700 whitespace-nowrap">직전연도 총급여액</span>
+              <input id="prevYearSalary" type="text" class="num w-56 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" value="0" />
             </label>
             <label class="flex items-center justify-between gap-3">
-              <span class="text-sm text-gray-700">올해 예상 총급여액 (원) <span class="text-xs text-gray-500">(세율 시뮬레이션용)</span></span>
-              <input id="currYearSalary" type="text" class="num w-56 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" placeholder="0" value="0" />
+              <span class="text-sm text-gray-700">올해 예상 총급여액</span>
+              <input id="currYearSalary" type="text" class="num w-56 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" value="0" />
             </label>
             <label class="flex items-start justify-between gap-3">
-              <div>
-                <div class="text-sm text-gray-700">근로소득 외 종합소득금액 (원)</div>
-                <div class="text-xs text-gray-500 mt-0.5">(이자·배당·사업·기타 등)</div>
-              </div>
-              <input id="otherIncome" type="text" class="num w-56 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" placeholder="0" value="0" />
+              <span class="text-sm text-gray-700">근로 외 종합소득금액</span>
+              <input id="otherIncome" type="text" class="num w-56 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" value="0" />
             </label>
             <label class="flex items-center justify-between gap-3">
               <span class="text-sm text-gray-700">중소기업 여부 🌱</span>
               <input id="isSME" type="checkbox" class="h-5 w-5 accent-emerald-500" />
             </label>
-            <p class="text-xs text-emerald-700 leading-5">※ 총급여액은 급여명세서의 <strong>총지급액</strong>(성과급 포함) 기준 근사치예요.</p>
+            <p class="text-xs text-emerald-700 leading-5 mt-1">※ 총급여액은 급여명세서의 <strong>총지급액</strong>(성과급 포함) 기준 근사치예요.</p>
           </div>
         </div>
 
-        <!-- 공제(근사) 설정 + 액션 -->
         <div class="mint-card p-5">
           <div class="flex items-center justify-between">
-            <h2 class="mb-3 text-lg font-semibold sec-title">공제(근사) 설정 🧮</h2>
-            <button id="toggleSI" class="mint-btn mint-btn-ghost text-xs whitespace-nowrap">4대보험율 편집</button>
+            <h2 class="mb-3 text-lg font-semibold text-emerald-800">공제(근사) 설정 🧮</h2>
+            <button id="toggleSI" class="mint-btn text-xs">4대보험율 편집</button>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
             <label class="flex items-center justify-between gap-3">
@@ -130,158 +123,167 @@
               <input id="basicDeductCount" type="text" class="num w-32 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" value="1" />
             </label>
             <label class="flex items-center justify-between gap-3">
-              <span class="text-gray-700">국민연금율(근로자부담, %)</span>
+              <span class="text-gray-700">국민연금율(근로자, %)</span>
               <input id="rateNP" type="text" class="num w-32 rounded-xl border border-emerald-300 px-3 py-2" value="4.5" disabled />
             </label>
             <label class="flex items-center justify-between gap-3">
-              <span class="text-gray-700">건강보험율(근로자부담, %)</span>
+              <span class="text-gray-700">건강보험율(근로자, %)</span>
               <input id="rateHI" type="text" class="num w-32 rounded-xl border border-emerald-300 px-3 py-2" value="3.545" disabled />
             </label>
             <label class="flex items-center justify-between gap-3">
-              <span class="text-gray-700">장기요양(건보의 %, 근로자부담)</span>
+              <span class="text-gray-700">장기요양(건보의 %, 근로자)</span>
               <input id="rateLTC" type="text" class="num w-32 rounded-xl border border-emerald-300 px-3 py-2" value="12.95" disabled />
             </label>
             <label class="flex items-center justify-between gap-3">
-              <span class="text-gray-700">고용보험율(근로자부담, %)</span>
+              <span class="text-gray-700">고용보험율(근로자, %)</span>
               <input id="rateEI" type="text" class="num w-32 rounded-xl border border-emerald-300 px-3 py-2" value="0.9" disabled />
             </label>
 
             <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
-              <div class="flex items-center justify-between gap-3">
-                <span class="text-gray-700">우리사주조합 출연 소득공제 (원)</span>
-                <input id="esopDeduct" type="text" class="num w-40 rounded-xl border border-emerald-300 px-3 py-2" value="0" />
-              </div>
               <label class="flex items-center justify-between gap-3">
-                <span class="text-gray-700">기타 소득공제 (원, 신용카드 등)</span>
-                <input id="otherDeductions" type="text" class="num w-40 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" placeholder="0" value="0" />
+                <span class="text-gray-700">우리사주 출연 소득공제 (원)</span>
+                <input id="esopDeduct" type="text" class="num w-40 rounded-xl border border-emerald-300 px-3 py-2" value="0" />
+              </label>
+              <label class="flex items-center justify-between gap-3">
+                <span class="text-gray-700">기타 소득공제 (원)</span>
+                <input id="otherDeductions" type="text" class="num w-40 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" value="0" />
               </label>
             </div>
           </div>
 
-          <!-- 액션 버튼 -->
           <div class="mt-4 flex flex-wrap items-center gap-2 justify-between">
-            <button id="resetBtn" class="mint-btn mint-btn-ghost text-xs md:text-sm whitespace-nowrap">🔄 입력 초기화</button>
-            <div class="flex items-center gap-2 flex-nowrap">
-              <button id="copyUrlBtn" class="mint-btn mint-btn-ghost text-xs md:text-sm whitespace-nowrap">🔗 현재 입력 공유 링크 복사</button>
-              <button id="downloadBtn" class="mint-btn mint-btn-ghost text-xs md:text-sm whitespace-nowrap">📥 결과 CSV 다운로드</button>
+            <button id="resetBtn" class="mint-btn text-xs md:text-sm">🔄 입력 초기화</button>
+            <div class="flex items-center gap-2">
+              <button id="copyUrlBtn" class="mint-btn text-xs md:text-sm">🔗 입력 공유 링크</button>
+              <button id="downloadBtn" class="mint-btn text-xs md:text-sm">📥 결과 CSV</button>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 오른쪽 결과 -->
+      <!-- 우: 결과 -->
       <div class="space-y-6">
-        <div id="secB" class="mint-card p-5">
-          <h3 class="mb-2 font-semibold sec-title">인출 시 근로소득 합산 금액 (로트 합계) 💰</h3>
+        <div class="mint-card p-5">
+          <h3 class="mb-2 font-semibold text-emerald-800">인출 시 근로소득 합산 금액 (로트 합계) 💰</h3>
           <div id="withdrawBox" class="text-sm text-gray-800"></div>
         </div>
 
-        <div id="secC" class="mint-card p-5">
-          <h3 class="mb-2 font-semibold sec-title">세율 구간 & 추가세금 시뮬레이션(근사) 📈</h3>
+        <div class="mint-card p-5">
+          <h3 class="mb-2 font-semibold text-emerald-800">세율 구간 & 결론(세후가치/순이익, 근사) 📈</h3>
           <div id="taxbox" class="text-sm text-gray-800"></div>
         </div>
 
-        <div id="detail" class="mint-card p-5 text-sm leading-6 text-emerald-800"></div>
+        <div class="mint-card p-5 text-sm leading-6 text-emerald-800">
+          <div class="text-xs text-emerald-700">※ 본 계산기는 참고용이며, 실제 신고는 회사 규정 및 세무전문가 확인이 필요합니다.</div>
+        </div>
       </div>
     </section>
 
     <!-- Notes -->
     <section id="how" class="mt-2 mint-card p-5">
-      <h3 class="mb-2 text-base font-semibold sec-title">📘 계산 로직(요지) & 주의사항</h3>
+      <h3 class="mb-2 text-base font-semibold text-emerald-800">📘 계산 로직 요약 & 주의사항</h3>
       <ul class="list-disc pl-5 text-sm text-gray-700 space-y-1">
-        <li>각 로트의 인출 과세단가 = <strong>min(해당 로트의 취득단가, 인출일자 시가)</strong></li>
-        <li>비과세율(의무예탁 종료 후 보유기간 기준): <strong>2~4년 미만 50%</strong>, <strong>4년 이상 75%</strong>, <strong>6년 이상 100%</strong>(<strong>중소기업만</strong>)</li>
-        <li>세율 시뮬레이션은 공제/보험 반영 <strong>과세표준 근사치</strong>를 이용합니다.</li>
+        <li>각 로트 과세단가 = <strong>min(취득단가, 인출일자 시가)</strong></li>
+        <li>비과세율(의무예탁 종료 후 보유기간 기준): <strong>2~4년 미만 50%</strong>, <strong>4년 이상 75%</strong>, <strong>6년 이상 100%(중소기업만)</strong></li>
+        <li>추가세금(근사) = 인출분 근로소득 합계 × 추정 한계세율(지방세 포함)</li>
+        <li>세후 가치(근사) = 인출주식 시가가치 − 추가세금(근사)</li>
+        <li>순이익(근사) = 세후 가치 − 실제 납입원가(로트별 납입단가×수량 합)</li>
       </ul>
-      <p class="mt-3 text-xs text-emerald-700">※ 실제 신고는 공제항목·세액공제·급여 외 소득 합산 등에 따라 달라질 수 있어요. 본 계산기는 참고용입니다.</p>
     </section>
   </main>
 
-  <footer class="mt-10 border-t border-emerald-200">
-    <div class="mx-auto max-w-6xl px-5 py-6 text-xs text-emerald-700">© 2025 우리사주 간이 계산기 (멀티-로트). 모든 책임은 사용자에게 있으며, 본 도구는 참고용입니다.</div>
-  </footer>
-
   <script>
     const $ = (id) => document.getElementById(id);
-    const toNumber = (str) => {
-      const cleaned = String(str||'').replace(/[^0-9.-]/g,'');
-      const n = parseFloat(cleaned);
+    const toNumber = (x) => {
+      const s = String(x ?? '').replace(/[^0-9.-]/g,'');
+      const n = parseFloat(s);
       return Number.isFinite(n) ? n : 0;
     };
     const fmt = (n) => Number.isFinite(n) ? n.toLocaleString('ko-KR') : '';
 
-    // ====== Lots state (in-memory) ======
-    let lots = []; // {id, acqDate, unit, shares}
+    // ======= State =======
+    let lots = []; // {id, acqDate, kind: '직원'|'회사', acqUnit, paidUnit, shares}
 
-    function addLot(acqDate='', unit=0, shares=0){
+    function addLot(acqDate='', acqUnit=0, shares=0, kind='직원', paidUnit=null){
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2,6);
-      lots.push({id, acqDate, unit, shares});
+      // Rule: 직원 -> paidUnit = acqUnit, 회사 -> paidUnit = 0 (unless explicitly provided)
+      let paid;
+      if (paidUnit === null || typeof paidUnit === 'undefined' || isNaN(paidUnit)) {
+        paid = (kind === '직원') ? (acqUnit || 0) : 0;
+      } else {
+        paid = paidUnit;
+      }
+      lots.push({id, acqDate, kind, acqUnit, paidUnit: paid, shares});
       renderLots();
       render();
     }
-    function removeLot(id){
-      lots = lots.filter(l => l.id !== id);
-      renderLots();
-      render();
-    }
-    function clearLots(){
-      lots = [];
-      renderLots();
-      render();
-    }
+    function removeLot(id){ lots = lots.filter(l => l.id !== id); renderLots(); render(); }
+    function clearLots(){ lots = []; renderLots(); render(); }
 
-    function bindLotRowEvents(rowEl, lot){
-      const d = rowEl.querySelector('.lot-date');
-      const u = rowEl.querySelector('.lot-unit');
-      const s = rowEl.querySelector('.lot-shares');
-      const del = rowEl.querySelector('.lot-del');
+    function bindLotRowEvents(tr, lot){
+      const d = tr.querySelector('.lot-date');
+      const k = tr.querySelector('.lot-kind');
+      const a = tr.querySelector('.lot-acq');
+      const p = tr.querySelector('.lot-paid');
+      const s = tr.querySelector('.lot-shares');
+      const del = tr.querySelector('.lot-del');
 
-      d.addEventListener('input', () => { lot.acqDate = d.value; render(); });
-      u.addEventListener('input', () => { lot.unit = toNumber(u.value); u.value = fmt(lot.unit); render(); });
-      s.addEventListener('input', () => { lot.shares = Math.max(0, Math.floor(toNumber(s.value))); s.value = fmt(lot.shares); render(); });
-      del.addEventListener('click', () => removeLot(lot.id));
+      const applyPaidRule = () => {
+        lot.paidUnit = (lot.kind === '직원') ? (lot.acqUnit || 0) : 0;
+        if (p) p.value = fmt(lot.paidUnit);
+      };
+
+      d.addEventListener('input', ()=>{ lot.acqDate = d.value; render(); });
+      k.addEventListener('change', ()=>{ lot.kind = k.value; applyPaidRule(); render(); });
+      a.addEventListener('input', ()=>{
+        lot.acqUnit = toNumber(a.value);
+        a.value = fmt(lot.acqUnit);
+        applyPaidRule();
+        render();
+      });
+      // paid input is disabled; not editable by user
+      s.addEventListener('input', ()=>{ lot.shares = Math.max(0, Math.floor(toNumber(s.value))); s.value = fmt(lot.shares); render(); });
+      del.addEventListener('click', ()=> removeLot(lot.id));
     }
 
     function renderLots(){
-      const tbody = $('lotBody');
-      tbody.innerHTML = '';
+      const body = $('lotBody');
+      body.innerHTML = '';
       lots.forEach((lot, idx) => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td class="px-2 py-2 text-xs text-gray-500">${idx+1}</td>
-          <td class="px-2 py-2"><input type="date" class="lot-date rounded-xl border border-emerald-300 px-3 py-1.5 cute-focus" value="${lot.acqDate||''}"></td>
-          <td class="px-2 py-2 text-right"><input type="text" class="num lot-unit w-32 rounded-xl border border-emerald-300 px-3 py-1.5 cute-focus" value="${fmt(lot.unit||0)}"></td>
-          <td class="px-2 py-2 text-right"><input type="text" class="num lot-shares w-28 rounded-xl border border-emerald-300 px-3 py-1.5 cute-focus" value="${fmt(lot.shares||0)}"></td>
-          <td class="px-2 py-2 text-right text-xs text-gray-600 lot-hold">-</td>
-          <td class="px-2 py-2 text-right text-xs text-gray-600 lot-exempt">-</td>
-          <td class="px-2 py-2 text-right text-xs text-gray-600 lot-taxunit">-</td>
-          <td class="px-2 py-2 text-right text-xs text-gray-600 lot-taxamt">-</td>
-          <td class="px-2 py-2 text-center"><button class="icon-btn lot-del">삭제</button></td>
+          <td class="px-2 py-1.5 text-xs text-gray-500">${idx+1}</td>
+          <td class="px-2 py-1.5"><input type="date" class="lot-date rounded-xl border border-emerald-300 px-3 py-1.5 cute-focus" value="${lot.acqDate||''}"></td>
+          <td class="px-2 py-1.5">
+            <select class="lot-kind rounded-xl border border-emerald-300 px-2 py-1.5 cute-focus">
+              <option ${lot.kind==='직원'?'selected':''}>직원</option>
+              <option ${lot.kind==='회사'?'selected':''}>회사</option>
+            </select>
+          </td>
+          <td class="px-2 py-1.5 text-right"><input type="text" class="num lot-acq w-28 rounded-xl border border-emerald-300 px-3 py-1.5 cute-focus" value="${fmt(lot.acqUnit||0)}"></td>
+          <td class="px-2 py-1.5 text-right"><input type="text" class="num lot-paid w-28 rounded-xl border border-emerald-300 px-3 py-1.5 cute-focus" value="${fmt(lot.paidUnit||0)}" disabled></td>
+          <td class="px-2 py-1.5 text-right"><input type="text" class="num lot-shares w-24 rounded-xl border border-emerald-300 px-3 py-1.5 cute-focus" value="${fmt(lot.shares||0)}"></td>
+          <td class="px-2 py-1.5 text-right text-xs text-gray-600 lot-hold">-</td>
+          <td class="px-2 py-1.5 text-right text-xs text-gray-600 lot-exempt">-</td>
+          <td class="px-2 py-1.5 text-right text-xs text-gray-600 lot-taxunit">-</td>
+          <td class="px-2 py-1.5 text-right text-xs text-gray-600 lot-taxamt">-</td>
+          <td class="px-2 py-1.5 text-center"><button class="lot-del px-2 py-1 border border-emerald-300 rounded-lg">삭제</button></td>
         `;
-        tbody.appendChild(tr);
+        body.appendChild(tr);
         bindLotRowEvents(tr, lot);
       });
     }
 
-    // ====== Common helpers ======
-    const allFieldIds = [
-      'prevYearSalary','currYearSalary','otherIncome',
-      'fmvAtWithdraw','basicDeductCount',
-      'rateNP','rateHI','rateLTC','rateEI','otherDeductions','escrowYears','esopDeduct'
-    ];
+    // ===== Helpers =====
+    const allFieldIds = ['prevYearSalary','currYearSalary','otherIncome','fmvAtWithdraw','basicDeductCount','rateNP','rateHI','rateLTC','rateEI','otherDeductions','escrowYears','esopDeduct'];
 
     function bindMasks(){
       for (const id of allFieldIds){
-        const el = $(id);
-        if(!el) continue;
-        const handler = () => { el.value = fmt(toNumber(el.value)); render(); };
-        el.addEventListener('input', handler);
+        const el = $(id); if(!el) continue;
+        el.addEventListener('input', ()=>{ el.value = fmt(toNumber(el.value)); render(); });
         el.value = fmt(toNumber(el.value));
       }
-      ['wdDate'].forEach(id=>{
-        const el = $(id);
-        if(el){ el.addEventListener('input', render); el.addEventListener('change', render); }
-      });
+      const wd = $('wdDate'); if (wd){ wd.addEventListener('input', render); wd.addEventListener('change', render); }
     }
 
     function read(){
@@ -289,17 +291,16 @@
       for (const id of allFieldIds) v[id] = toNumber($(id)?.value || 0);
       v.basicDeductCount = Math.max(0, Math.floor(v.basicDeductCount));
       v.isSME = !!$('isSME')?.checked;
-      v.wdDate  = $('wdDate')?.value  || '';
+      v.wdDate = $('wdDate')?.value || '';
       return v;
     }
 
     function yearsBetween(aStr, bStr){
       if(!aStr || !bStr) return 0;
-      const a = new Date(aStr);
-      const b = new Date(bStr);
+      const a = new Date(aStr), b = new Date(bStr);
       if (isNaN(a) || isNaN(b)) return 0;
       const ms = b - a;
-      return Math.max(0, ms / (1000*60*60*24*365.25));
+      return Math.max(0, ms/(1000*60*60*24*365.25));
     }
 
     function earnedIncomeDeduction(gross){
@@ -310,55 +311,50 @@
       if (x <= 150000000) return 13500000 + (x-88000000)*0.05;
       return 16000000 + (x-150000000)*0.02;
     }
-
-    function socialInsurance(prevGross, rateNP, rateHI, rateLTC, rateEI){
-      const np = prevGross * (rateNP/100);
-      const hi = prevGross * (rateHI/100);
-      const ltc = hi * (rateLTC/100);
-      const ei = prevGross * (rateEI/100);
-      return { np, hi, ltc, ei, total: np+hi+ltc+ei };
+    function socialInsurance(prevGross, rNP, rHI, rLTC, rEI){
+      const np = prevGross*(rNP/100);
+      const hi = prevGross*(rHI/100);
+      const ltc = hi*(rLTC/100);
+      const ei = prevGross*(rEI/100);
+      return {np,hi,ltc,ei,total:np+hi+ltc+ei};
     }
 
-    // ====== Core render ======
+    // ===== Core render =====
     function render(){
       const v = read();
 
-      // Per-lot calculations
-      let totalShares = 0;
-      let totalGross = 0;
-      let totalExempt = 0;
-      let totalTaxable = 0;
-
-      lots.forEach((lot, idx) => {
-        const holdYears = yearsBetween(lot.acqDate, $('wdDate').value);
-        const afterEscrow = Math.max(0, holdYears - (v.escrowYears || 0));
+      // per-lot calc
+      let totalShares=0, totalGross=0, totalExempt=0, totalTaxable=0, totalPaid=0;
+      lots.forEach((lot, idx)=>{
+        const holdYears = yearsBetween(lot.acqDate, v.wdDate);
+        const afterEscrow = Math.max(0, holdYears - (v.escrowYears||0));
         let exemptRate = 0;
         if (afterEscrow >= 6 && v.isSME) exemptRate = 1.0;
-        else if (afterEscrow >= 4)      exemptRate = 0.75;
-        else if (afterEscrow >= 2)      exemptRate = 0.50;
+        else if (afterEscrow >= 4) exemptRate = 0.75;
+        else if (afterEscrow >= 2) exemptRate = 0.50;
 
-        const taxUnit = Math.min(lot.unit||0, v.fmvAtWithdraw||0);
+        const taxUnit = Math.min(lot.acqUnit||0, v.fmvAtWithdraw||0);
         const gross = (lot.shares||0) * taxUnit;
-        const exemptAmt = Math.round(gross * exemptRate);
+        const exemptAmt = Math.round(gross*exemptRate);
         const taxable = Math.max(0, gross - exemptAmt);
+        const paid = (lot.shares||0) * (lot.paidUnit||0);
 
         totalShares += (lot.shares||0);
-        totalGross  += gross;
+        totalGross += gross;
         totalExempt += exemptAmt;
-        totalTaxable+= taxable;
+        totalTaxable += taxable;
+        totalPaid += paid;
 
-        // update UI cells
-        const body = $('lotBody');
-        const row = body.children[idx];
-        if (row){
-          row.querySelector('.lot-hold').textContent    = `${afterEscrow.toFixed(2)}년`;
-          row.querySelector('.lot-exempt').textContent  = `${Math.round(exemptRate*100)}%`;
-          row.querySelector('.lot-taxunit').textContent = `${(taxUnit).toLocaleString('ko-KR')} 원/주`;
-          row.querySelector('.lot-taxamt').textContent  = `${(taxable).toLocaleString('ko-KR')} 원`;
+        const row = $('lotBody').children[idx];
+        if(row){
+          row.querySelector('.lot-hold').textContent = `${afterEscrow.toFixed(2)}년`;
+          row.querySelector('.lot-exempt').textContent = `${Math.round(exemptRate*100)}%`;
+          row.querySelector('.lot-taxunit').textContent = `${taxUnit.toLocaleString('ko-KR')} 원/주`;
+          row.querySelector('.lot-taxamt').textContent = `${taxable.toLocaleString('ko-KR')} 원`;
         }
       });
 
-      // B 박스
+      // B box: summary
       $('withdrawBox').innerHTML = `
         <div class="grid grid-cols-1 gap-3">
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -377,7 +373,7 @@
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3">
-              <div class="text-xs text-emerald-700">합산 금액(비과세 적용 전)</div>
+              <div class="text-xs text-emerald-700">합산 금액(비과세 전)</div>
               <div class="text-lg font-semibold text-emerald-900">${(totalGross).toLocaleString('ko-KR')} <span class="text-sm">원</span></div>
             </div>
             <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3">
@@ -385,18 +381,18 @@
               <div class="text-lg font-semibold text-emerald-900">${(totalExempt).toLocaleString('ko-KR')} <span class="text-sm">원</span></div>
             </div>
             <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3">
-              <div class="text-xs text-emerald-700">근로소득 합산 금액(비과세 적용 후)</div>
+              <div class="text-xs text-emerald-700">근로소득 합산 금액(비과세 후)</div>
               <div class="text-lg font-semibold text-emerald-900">${(totalTaxable).toLocaleString('ko-KR')} <span class="text-sm">원</span></div>
             </div>
           </div>
         </div>`;
 
-      // 세율/추가세금
-      const eidSalaryOnly = earnedIncomeDeduction(v.currYearSalary);
+      // tax & conclusions
+      const eid = earnedIncomeDeduction(v.currYearSalary);
       const si = socialInsurance(v.prevYearSalary, v.rateNP, v.rateHI, v.rateLTC, v.rateEI);
-      const basicDeduction = v.basicDeductCount * 1500000;
-      const earnedBaseSalaryOnly = Math.max(0, v.currYearSalary - eidSalaryOnly - si.total);
-      const approxTaxableIncome = Math.max(0, earnedBaseSalaryOnly + v.otherIncome - basicDeduction - v.esopDeduct - v.otherDeductions + totalTaxable);
+      const basic = v.basicDeductCount * 1500000;
+      const baseEarned = Math.max(0, v.currYearSalary - eid - si.total);
+      const approxTaxable = Math.max(0, baseEarned + v.otherIncome - basic - v.esopDeduct - v.otherDeductions + totalTaxable);
 
       const brackets = [
         { upTo: 14000000,  rate: 0.06 },
@@ -408,16 +404,21 @@
         { upTo: 1000000000,rate: 0.42 },
         { upTo: Infinity,  rate: 0.45 },
       ];
-      const marginalRate = (() => { for (const b of brackets){ if (approxTaxableIncome <= b.upTo) return b.rate; } return 0.45; })();
-      const marginalRateWithLocal = marginalRate * 1.10;
-      const estimatedAdditionalTaxWithdraw = Math.round(totalTaxable * marginalRateWithLocal);
+      let marginalRate = 0.45;
+      for (const b of brackets){ if (approxTaxable <= b.upTo){ marginalRate = b.rate; break; } }
+      const marginalWithLocal = marginalRate * 1.10;
+      const estimatedAdditionalTax = Math.round(totalTaxable * marginalWithLocal);
 
-      const taxRows = brackets.map((b, i) => {
-        const from = i === 0 ? 0 : brackets[i-1].upTo + 1;
-        const to   = b.upTo === Infinity ? '이상' : `${fmt(b.upTo)}원`;
-        const isMy = (approxTaxableIncome <= b.upTo);
-        return `<tr class="${isMy ? 'bg-emerald-50' : ''}">
-          <td class="px-3 py-1 text-right whitespace-nowrap">${fmt(from)}원 ~ ${to}</td>
+      const totalFMVValue = Math.round((v.fmvAtWithdraw||0) * (totalShares||0)); // 시가가치
+      const afterTaxValue = Math.max(0, totalFMVValue - estimatedAdditionalTax);
+      const netGain = afterTaxValue - totalPaid;
+
+      const taxRows = brackets.map((b, i)=>{
+        const from = i===0 ? 0 : brackets[i-1].upTo+1;
+        const to = b.upTo===Infinity ? '이상' : `${fmt(b.upTo)}원`;
+        const isMy = approxTaxable <= b.upTo;
+        return `<tr class="${isMy?'bg-emerald-50':''}">
+          <td class="px-3 py-1 text-right">${fmt(from)}원 ~ ${to}</td>
           <td class="px-3 py-1 text-right">${Math.round(b.rate*100)}%</td>
           <td class="px-3 py-1 text-right">${Math.round(b.rate*11000)/100}% (지방세 포함)</td>
         </tr>`;
@@ -428,124 +429,126 @@
           <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-sm">
             <div class="grid grid-cols-2 gap-2">
               <div>올해 예상 총급여</div><div class="text-right font-semibold">${fmt(v.currYearSalary)} 원</div>
-              <div>근로소득 외 종합소득금액</div><div class="text-right font-semibold">${fmt(v.otherIncome)} 원</div>
-              <div>근로소득공제(근사)</div><div class="text-right font-semibold">${fmt(eidSalaryOnly)} 원</div>
-              <div>4대보험(근로자부담·근사, 전기 기준)</div><div class="text-right font-semibold">${fmt(si.total)} 원 <span class="text-xs text-emerald-700">(국민:${fmt(si.np)}, 건보:${fmt(si.hi)}, 장기요양:${fmt(si.ltc)}, 고용:${fmt(si.ei)})</span></div>
-              <div>기본공제(본인 등)</div><div class="text-right font-semibold">${fmt(basicDeduction)} 원</div>
-              <div>우리사주 출연 소득공제(사용자 입력)</div><div class="text-right font-semibold">${fmt(v.esopDeduct)} 원</div>
-              <div>기타 소득공제</div><div class="text-right font-semibold">${fmt(v.otherDeductions || 0)} 원</div>
-              <div>+ 인출분 근로소득(비과세 적용 후)</div><div class="text-right font-semibold">${fmt(totalTaxable)} 원</div>
-              <div>과세표준(근사)</div><div class="text-right font-semibold">${fmt(approxTaxableIncome)} 원</div>
+              <div>근로 외 종합소득금액</div><div class="text-right font-semibold">${fmt(v.otherIncome)} 원</div>
+              <div>근로소득공제(근사)</div><div class="text-right font-semibold">${fmt(eid)} 원</div>
+              <div>4대보험(근로자·근사, 전기)</div><div class="text-right font-semibold">${fmt(si.total)} 원 <span class="text-xs text-emerald-700">(국민:${fmt(si.np)}, 건보:${fmt(si.hi)}, 장기요양:${fmt(si.ltc)}, 고용:${fmt(si.ei)})</span></div>
+              <div>기본공제</div><div class="text-right font-semibold">${fmt(basic)} 원</div>
+              <div>우리사주 출연 소득공제(입력)</div><div class="text-right font-semibold">${fmt(v.esopDeduct)} 원</div>
+              <div>기타 소득공제</div><div class="text-right font-semibold">${fmt(v.otherDeductions)} 원</div>
+              <div>+ 인출분 근로소득(비과세 후)</div><div class="text-right font-semibold">${fmt(totalTaxable)} 원</div>
+              <div>과세표준(근사)</div><div class="text-right font-semibold">${fmt(approxTaxable)} 원</div>
             </div>
           </div>
 
           <div class="overflow-auto">
             <table class="w-full text-xs">
               <thead class="text-emerald-700">
-                <tr>
-                  <th class="px-3 py-1 text-right font-medium">과세표준 구간(근사)</th>
-                  <th class="px-3 py-1 text-right font-medium">국세 세율</th>
-                  <th class="px-3 py-1 text-right font-medium">합산 세율(국세+지방세)</th>
-                </tr>
+                <tr><th class="px-3 py-1 text-right">과세표준 구간</th><th class="px-3 py-1 text-right">국세 세율</th><th class="px-3 py-1 text-right">합산 세율</th></tr>
               </thead>
               <tbody>${taxRows}</tbody>
             </table>
           </div>
 
-          <div id="additionalTaxCard" class="rounded-xl bg-rose-100 border border-rose-300 p-4 mt-2 shadow-sm text-center">
+          <!-- Additional tax FIRST -->
+          <div class="rounded-xl bg-rose-100 border border-rose-300 p-4 mt-1 shadow-sm text-center">
             <div class="text-xs text-rose-900 mb-1">예상 추가세금(근사)</div>
-            <div class="text-xl font-extrabold text-rose-900">${fmt(estimatedAdditionalTaxWithdraw)} 원</div>
+            <div class="text-xl font-extrabold text-rose-900">${fmt(estimatedAdditionalTax)} 원</div>
           </div>
-          <div class="text-xs text-emerald-700">※ 추가세금은 <strong>인출 시 근로소득 합산 금액(비과세 적용 후)</strong> 합계에 추정 한계세율(지방세 포함)을 적용한 값(근사)입니다.</div>
-        </div>`;
 
-      $('detail').innerHTML = `<div class="text-xs text-emerald-700">※ 본 계산기는 참고용이며, 실제 신고는 회사 규정 및 세무전문가 확인이 필요합니다.</div>`;
+          <!-- FMV value -->
+          <div class="rounded-xl bg-white border border-emerald-200 p-4 mt-1 shadow-sm text-center">
+            <div class="text-xs text-emerald-700 mb-1">인출주식 가치(시가 기준)</div>
+            <div class="text-xl font-extrabold text-emerald-900">${fmt(totalFMVValue)} 원</div>
+          </div>
+
+          <!-- After-tax value -->
+          <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-4 mt-1 shadow-sm text-center">
+            <div class="text-xs text-emerald-700 mb-1">세후 가치(근사) = 시가가치 − 예상 추가세금</div>
+            <div class="text-xl font-extrabold text-emerald-900">${fmt(afterTaxValue)} 원</div>
+          </div>
+
+          <!-- Net gain -->
+          <div class="rounded-xl bg-indigo-50 border border-indigo-200 p-4 mt-1 shadow-sm text-center">
+            <div class="text-xs text-indigo-700 mb-1">이번 인출 순이익(근사) = 세후 가치 − 실제 납입원가</div>
+            <div class="text-xl font-extrabold text-indigo-900">${fmt(netGain)} 원</div>
+            <div class="text-[11px] text-indigo-700 mt-1">
+              (시가 ${fmt(totalFMVValue)} − 세금 ${fmt(estimatedAdditionalTax)} − 납입원가 ${fmt(totalPaid)})
+            </div>
+            <div class="text-[11px] text-indigo-700 mt-1">※ 과거 우리사주조합 출연 시 받은 소득공제 혜택은 고려되지 않았습니다.</div>
+          </div>
+        </div>`;
     }
 
     function bindActions(){
-      $('toggleSI').addEventListener('click', () => {
-        ['rateNP','rateHI','rateLTC','rateEI'].forEach(id => { const el = $(id); el.disabled = !el.disabled; });
+      $('toggleSI').addEventListener('click', ()=>{
+        ['rateNP','rateHI','rateLTC','rateEI'].forEach(id=>{ const el=$(id); el.disabled = !el.disabled; });
       });
-
-      $('addRow').addEventListener('click', () => addLot());
-      $('clearRows').addEventListener('click', () => clearLots());
-
-      $('resetBtn').addEventListener('click', () => {
-        const defaults = {
-          prevYearSalary:'0', currYearSalary:'0', otherIncome:'0',
-          fmvAtWithdraw:'0', basicDeductCount:'1', rateNP:'4.5', rateHI:'3.545', rateLTC:'12.95', rateEI:'0.9',
-          otherDeductions:'0', escrowYears:'1', esopDeduct:'0'
-        };
-        for (const id of Object.keys(defaults)) $(id).value = defaults[id];
+      $('addRow').addEventListener('click', ()=> addLot());
+      $('clearRows').addEventListener('click', clearLots);
+      $('resetBtn').addEventListener('click', ()=>{
+        const defaults = {prevYearSalary:'0', currYearSalary:'0', otherIncome:'0', fmvAtWithdraw:'0', basicDeductCount:'1', rateNP:'4.5', rateHI:'3.545', rateLTC:'12.95', rateEI:'0.9', otherDeductions:'0', escrowYears:'1', esopDeduct:'0'};
+        for (const k of Object.keys(defaults)) $(k).value = defaults[k];
         $('isSME').checked = false;
-        $('wdDate').value  = '';
-        clearLots();
-        addLot(); // at least one row to start
-        bindMasks();
-        render();
+        $('wdDate').value = '';
+        clearLots(); addLot();
+        bindMasks(); render();
       });
-
-      $('copyUrlBtn').addEventListener('click', () => {
+      $('copyUrlBtn').addEventListener('click', ()=>{
         const params = new URLSearchParams();
         for (const id of allFieldIds) params.set(id, toNumber($(id).value));
         params.set('isSME', $('isSME').checked ? '1':'0');
         params.set('wdDate', $('wdDate').value||'');
-        // include lots as JSON
         params.set('lots', encodeURIComponent(JSON.stringify(lots)));
         const url = `${location.origin}${location.pathname}?${params.toString()}`;
-        navigator.clipboard.writeText(url).then(() => alert('현재 입력이 포함된 링크를 복사했어요! 😊'));
+        navigator.clipboard.writeText(url).then(()=> alert('현재 입력 링크를 복사했습니다 😊'));
       });
-
-      $('downloadBtn').addEventListener('click', () => {
-        const qs = (id) => document.getElementById(id);
+      $('downloadBtn').addEventListener('click', ()=>{
         const rows = [
           ['항목','값'],
-          ['올해 예상 총급여액', qs('currYearSalary').value],
-          ['근로소득 외 종합소득금액', qs('otherIncome').value],
-          ['중소기업 여부', $('isSME').checked ? 'Y':'N'],
-          ['의무예탁기간(년)', qs('escrowYears').value],
+          ['올해 예상 총급여액', $('currYearSalary').value],
+          ['근로 외 종합소득금액', $('otherIncome').value],
+          ['중소기업 여부', $('isSME').checked?'Y':'N'],
+          ['의무예탁기간(년)', $('escrowYears').value],
           ['인출일자', $('wdDate').value],
-          ['인출일자 시가', qs('fmvAtWithdraw').value],
-          ['우리사주 출연 소득공제(입력값)', qs('esopDeduct').value],
-          ['기타 소득공제', qs('otherDeductions').value],
+          ['인출일자 시가', $('fmvAtWithdraw').value],
+          ['우리사주 출연 소득공제(입력)', $('esopDeduct').value],
+          ['기타 소득공제', $('otherDeductions').value],
           [],
-          ['[로트 상세] #','취득일자','취득단가','인출주식수']
+          ['[로트 상세] #','취득일자','출연구분','취득단가','실제 납입단가','인출주식수']
         ];
-        lots.forEach((l, i) => {
-          rows.push([String(i+1), l.acqDate||'', String(l.unit||0), String(l.shares||0)]);
-        });
-        const csv = rows.map(r => r.join(',')).join('\\n');
-        const blob = new Blob(["\\ufeff" + csv], {type: 'text/csv;charset=utf-8;'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = 'withdraw_multi_lot_result.csv';
-        a.click();
+        lots.forEach((l,i)=> rows.push([String(i+1), l.acqDate||'', l.kind||'', String(l.acqUnit||0), String(l.paidUnit||0), String(l.shares||0)]));
+        const csv = rows.map(r=>r.join(',')).join('\n');
+        const blob = new Blob(["\ufeff"+csv], {type:'text/csv;charset=utf-8;'});
+        const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='esop_calc_result.csv'; a.click();
       });
 
-      // URL 파라미터 초기값 세팅
+      // URL params load
       const qs = new URLSearchParams(location.search);
       for (const id of allFieldIds){ if(qs.has(id)) $(id).value = fmt(toNumber(qs.get(id))); }
-      if (qs.has('isSME')) $('isSME').checked = (qs.get('isSME') === '1');
-      if (qs.has('wdDate'))  $('wdDate').value  = qs.get('wdDate');
+      if (qs.has('isSME')) $('isSME').checked = (qs.get('isSME')==='1');
+      if (qs.has('wdDate')) $('wdDate').value = qs.get('wdDate');
 
       if (qs.has('lots')){
         try {
           const arr = JSON.parse(decodeURIComponent(qs.get('lots')));
-          if (Array.isArray(arr)) {
-            lots = [];
-            arr.forEach(o => addLot(o.acqDate||'', toNumber(o.unit), Math.floor(toNumber(o.shares))));
-          }
+          if (Array.isArray(arr)){
+            clearLots();
+            arr.forEach(o=> {
+              const kind = (o.kind||'직원');
+              const acqU = Number.isFinite(+o.acqUnit) ? +o.acqUnit : Number.isFinite(+o.unit) ? +o.unit : 0;
+              const paidU = (o.paidUnit !== undefined && o.paidUnit !== null && Number.isFinite(+o.paidUnit))
+                            ? +o.paidUnit
+                            : (kind === '직원' ? acqU : 0);
+              addLot(o.acqDate||'', acqU, Math.floor(Number.isFinite(+o.shares)?+o.shares:0), kind, paidU);
+            });
+          } else addLot();
         } catch(e){ addLot(); }
       } else {
         addLot();
       }
     }
 
-    function init(){
-      bindMasks();
-      bindActions();
-      render();
-    }
+    function init(){ bindMasks(); bindActions(); render(); }
     init();
   </script>
 </body>
