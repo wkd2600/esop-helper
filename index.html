@@ -233,8 +233,25 @@
         if (p) p.value = fmt(lot.paidUnit);
       };
 
-      d.addEventListener('input', ()=>{ lot.acqDate = d.value; render(); });
-      k.addEventListener('change', ()=>{ lot.kind = k.value; applyPaidRule(); render(); });
+      
+      // Date mask: enforce YYYY-MM-DD in lot acq date
+      d.addEventListener('input', ()=>{
+        const onlyDigits = (d.value || '').replace(/\D/g, '').slice(0, 8); // YYYYMMDD max
+        const y = onlyDigits.slice(0, 4);
+        const m = onlyDigits.slice(4, 6);
+        const dd = onlyDigits.slice(6, 8);
+        let out = y;
+        if (onlyDigits.length >= 5) out += '-' + m;
+        else if (onlyDigits.length >= 4) out += '-';
+        if (onlyDigits.length >= 7) out += '-' + dd;
+        else if (onlyDigits.length >= 6) out += '-';
+        const pos = out.length;
+        d.value = out;
+        try { d.setSelectionRange(pos, pos); } catch(e) {}
+        lot.acqDate = (out.length === 10) ? out : '';
+        render();
+      });
+    k.addEventListener('change', ()=>{ lot.kind = k.value; applyPaidRule(); render(); });
       a.addEventListener('input', ()=>{
         lot.acqUnit = toNumber(a.value);
         a.value = fmt(lot.acqUnit);
@@ -253,7 +270,7 @@
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td class="px-2 py-1.5 text-xs text-gray-500">${idx+1}</td>
-          <td class="px-2 py-1.5"><input type="date" class="lot-date rounded-xl border border-emerald-300 px-3 py-1.5 cute-focus" value="${lot.acqDate||''}"></td>
+          <td class="px-2 py-1.5"><input type="text" inputmode="numeric" maxlength="10" placeholder="YYYY-MM-DD" class="lot-date rounded-xl border border-emerald-300 px-3 py-1.5 cute-focus" value="${lot.acqDate||''}"></td>
           <td class="px-2 py-1.5">
             <select class="lot-kind rounded-xl border border-emerald-300 px-2 py-1.5 cute-focus">
               <option ${lot.kind==='직원'?'selected':''}>직원</option>
@@ -272,6 +289,18 @@
         body.appendChild(tr);
         bindLotRowEvents(tr, lot);
       });
+
+      // === Auto focus: if user types only year, append '-' to move to month ===
+      const dateInputs = document.querySelectorAll('.lot-date');
+      dateInputs.forEach(inp => {
+        inp.addEventListener('input', (e) => {
+          const val = e.target.value;
+          if (/^\d{4}$/.test(val)) {
+            e.target.value = val + '-';
+          }
+        });
+      });
+
     }
 
     // ===== Helpers =====
@@ -475,6 +504,9 @@
               (시가 ${fmt(totalFMVValue)} − 세금 ${fmt(estimatedAdditionalTax)} − 납입원가 ${fmt(totalPaid)})
             </div>
             <div class="text-[11px] text-indigo-700 mt-1">※ 과거 우리사주조합 출연 시 받은 소득공제 혜택은 고려되지 않았습니다.</div>
+            <div class="text-[11px] text-indigo-700 mt-0.5">
+              <span class="relative group cursor-pointer">❓<span class="absolute hidden group-hover:block text-xs text-gray-700 bg-white border border-gray-300 rounded-md p-2 w-max left-1/2 -translate-x-1/2 mt-1 shadow">귀하의 과거 우리사주조합 출연 시 받은 소득공제는 현재 세율 구간을 기준으로 약 ${fmt(Math.round(totalPaid * marginalWithLocal))} 원입니다.</span></span>
+            </div>
           </div>
         </div>`;
     }
