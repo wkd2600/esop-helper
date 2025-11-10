@@ -6,45 +6,6 @@
   <title>우리사주 간이계산기 Beta</title>
   <meta name="description" content="우리사주 인출 시 세후가치·순이익(근사)까지 계산하는 멀티-로트 계산기" />
   <script src="https://cdn.tailwindcss.com">
-// === Profile Save/Load (input-based) ===
-function getAppState(){
-  return { v: JSON.parse(JSON.stringify(v)), lots: JSON.parse(JSON.stringify(lots)) };
-}
-function setAppState(st){
-  if(st.v){ v = Object.assign(v, st.v); }
-  if(st.lots){ lots = st.lots; }
-  render();
-}
-function readProfileName(){
-  return (document.getElementById('profileName').value||'').trim();
-}
-function saveProfile(){
-  const name = readProfileName();
-  if(!name){ alert('프로필 이름을 입력하세요.'); return; }
-  localStorage.setItem('ESOP_PROFILE_'+name, JSON.stringify(getAppState()));
-  alert('저장되었습니다.');
-}
-function loadProfile(){
-  const name = readProfileName();
-  if(!name){ alert('불러올 프로필 이름을 입력하세요.'); return; }
-  const raw = localStorage.getItem('ESOP_PROFILE_'+name);
-  if(!raw){ alert('해당 이름의 프로필이 없습니다.'); return; }
-  setAppState(JSON.parse(raw));
-}
-function deleteProfile(){
-  const name = readProfileName();
-  if(!name){ alert('삭제할 프로필 이름을 입력하세요.'); return; }
-  if(!localStorage.getItem('ESOP_PROFILE_'+name)){ alert('해당 이름의 프로필이 없습니다.'); return; }
-  if(confirm('['+name+'] 프로필을 삭제할까요?')){
-    localStorage.removeItem('ESOP_PROFILE_'+name);
-    alert('삭제되었습니다.');
-  }
-}
-document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('btnSaveProfile').addEventListener('click', saveProfile);
-  document.getElementById('btnLoadProfile').addEventListener('click', loadProfile);
-  document.getElementById('btnDeleteProfile').addEventListener('click', deleteProfile);
-});
 </script>
   <style>
     body { font-family: 'Pretendard','Apple SD Gothic Neo',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,'Noto Sans',sans-serif; }
@@ -63,24 +24,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
         우리사주 간이계산기 <span class="text-xs text-emerald-700 align-top">Beta</span>
       </h1>
         
-        <div class="mt-2 mb-4 flex flex-wrap items-center gap-2">
-          <input id="profileName" type="text" placeholder="프로필 이름" class="rounded-xl border border-emerald-300 px-3 py-2 cute-focus w-60"/>
-          <button id="btnSaveProfile" class="rounded-xl bg-emerald-600 text-white px-3 py-2 shadow">프로필 저장</button>
-          <button id="btnLoadProfile" class="rounded-xl bg-emerald-500 text-white px-3 py-2 shadow">불러오기</button>
-          <button id="btnDeleteProfile" class="rounded-xl bg-rose-500 text-white px-3 py-2 shadow">삭제</button>
-        </div>
-        
-        <div class="mb-4 text-sm text-emerald-700">
-          <span class="relative group cursor-help font-semibold text-emerald-700">❓
-            <span class="absolute hidden group-hover:block bg-white text-gray-700 border border-gray-300 rounded-md p-2 text-[11px] w-72 left-1/2 -translate-x-1/2 mt-1 shadow-lg z-10">
-              입력한 내용과 저장한 프로필은 사용자의 <strong>브라우저(LocalStorage)</strong>에만 보관되며, 인터넷이나 서버로 <strong>전송되지 않습니다.</strong><br>
-              다른 기기·브라우저에서는 동일한 프로필을 불러올 수 없습니다.
-            </span>
-          </span>
-        </div>
+<div class="mt-2 mb-4 flex flex-wrap items-center gap-2">
+  <button id="btnExport" class="rounded-xl bg-emerald-600 text-white px-3 py-2 shadow">내보내기</button>
+  <button id="btnImport" class="rounded-xl bg-emerald-500 text-white px-3 py-2 shadow">가져오기</button>
+  <input id="importFile" type="file" accept="application/json" class="hidden" />
+</div>
 
-
-    
 
       <a href="#how" class="text-sm text-emerald-800 hover:text-emerald-900">로직/주의사항 💡</a>
     </div>
@@ -530,7 +479,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
       $('taxbox').innerHTML = `
         <div class="grid grid-cols-1 gap-4">
-          <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-sm<div class="grid grid-cols-2 gap-2">
+          <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-sm"><div class="grid grid-cols-2 gap-2">
               <div>올해 예상 총급여</div><div class="text-right font-semibold">${fmt(v.currYearSalary)} 원</div>
               <div>근로 외 종합소득금액</div><div class="text-right font-semibold">${fmt(v.otherIncome)} 원</div>
               <div>4대보험(근로자·근사, 전기)</div><div class="text-right font-semibold">${fmt(si.total)} 원 <span class="text-[11px] text-gray-500">(국민:${fmt(si.nps)}, 건강:${fmt(si.hi)}, 장기요양:${fmt(si.ltc)}, 고용:${fmt(si.ei)})</span></div>
@@ -540,7 +489,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
               <div>+ 인출분 근로소득(비과세 후)</div><div class="text-right font-semibold">${fmt(totalTaxable)} 원</div>
               <div>근로소득공제(근사, 증분 반영)</div><div class="text-right font-semibold">${fmt(eidAfter)} 원 <span class="text-[11px] text-emerald-700">(증가분: ${fmt(eidIncr)} 원)</span></div>
               <div>과세표준(근사)</div><div class="text-right font-semibold">${fmt(approxTaxable)} 원</div>
-            </div>v>
+            </div>
             </div>
           </div>
 
@@ -586,7 +535,92 @@ document.addEventListener('DOMContentLoaded', ()=>{
         </div>`;
     }
 
-    function bindActions(){
+    
+// === Export/Import (JSON) ===
+function appStateFromUI(){
+  const v = read();
+  return {
+    meta: { app: "esop_calc", version: "v16", savedAt: new Date().toISOString() },
+    fields: v,
+    lots: JSON.parse(JSON.stringify(lots || []))
+  };
+}
+function applyAppState(state){
+  try{
+    const s = state || {};
+    const v = s.fields || {};
+    // Apply scalar fields
+    const scalarIds = ['prevYearSalary','currYearSalary','otherIncome','fmvAtWithdraw','basicDeductCount','rateNP','rateHI','rateLTC','rateEI','otherDeductions','escrowYears','esopDeduct'];
+    scalarIds.forEach(id=>{
+      if(document.getElementById(id)){
+        const val = (v[id] !== undefined && v[id] !== null) ? v[id] : '';
+        document.getElementById(id).value = (typeof val === 'number') ? val.toLocaleString('ko-KR') : val;
+      }
+    });
+    if(document.getElementById('isSME')) document.getElementById('isSME').checked = !!v.isSME;
+    if(document.getElementById('wdDate')) document.getElementById('wdDate').value = (v.wdDate || '');
+
+    // Apply lots
+    clearLots();
+    (s.lots || []).forEach(o=>{
+      const kind = (o.kind || '직원');
+      const acqU = Number.isFinite(+o.acqUnit) ? +o.acqUnit : 0;
+      const paidU = Number.isFinite(+o.paidUnit) ? +o.paidUnit : (kind === '직원' ? acqU : 0);
+      const shares = Math.floor(Number.isFinite(+o.shares) ? +o.shares : 0);
+      const taxFlag = (o.taxFlag || '과세');
+      addLot(o.acqDate || '', acqU, shares, kind, paidU, taxFlag);
+    });
+    bindMasks();
+    render();
+  }catch(e){
+    alert('가져오기 중 오류가 발생했습니다: ' + e.message);
+  }
+}
+
+function hookExportImport(){
+  const btnExport = document.getElementById('btnExport');
+  const btnImport = document.getElementById('btnImport');
+  const fileInput = document.getElementById('importFile');
+  if(btnExport){
+    btnExport.addEventListener('click', ()=>{
+      const st = appStateFromUI();
+      const blob = new Blob([JSON.stringify(st, null, 2)], {type: 'application/json'});
+      const a = document.createElement('a');
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth()+1).padStart(2,'0');
+      const d = String(now.getDate()).padStart(2,'0');
+      const hh = String(now.getHours()).padStart(2,'0');
+      const mm = String(now.getMinutes()).padStart(2,'0');
+      a.href = URL.createObjectURL(blob);
+      a.download = `esop_state_${y}${m}${d}_${hh}${mm}.json`;
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
+    });
+  }
+  if(btnImport && fileInput){
+    btnImport.addEventListener('click', ()=> fileInput.click());
+    fileInput.addEventListener('change', (e)=>{
+      const f = e.target.files && e.target.files[0];
+      if(!f) return;
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        try{
+          const obj = JSON.parse(reader.result);
+          applyAppState(obj);
+          alert('가져오기가 완료되었습니다.');
+        }catch(err){
+          alert('JSON 파싱 오류: ' + err.message);
+        }finally{
+          fileInput.value = '';
+        }
+      };
+      reader.readAsText(f, 'utf-8');
+    });
+  }
+}
+
+function bindActions(){
       $('toggleSI').addEventListener('click', ()=>{
         ['rateNP','rateHI','rateLTC','rateEI'].forEach(id=>{ const el=$(id); el.disabled = !el.disabled; });
       });
@@ -657,46 +691,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
 
     function init(){ bindMasks(); bindActions(); render(); }
     init();
+hookExportImport();
   
-// === Profile Save/Load (input-based) ===
-function getAppState(){
-  return { v: JSON.parse(JSON.stringify(v)), lots: JSON.parse(JSON.stringify(lots)) };
-}
-function setAppState(st){
-  if(st.v){ v = Object.assign(v, st.v); }
-  if(st.lots){ lots = st.lots; }
-  render();
-}
-function readProfileName(){
-  return (document.getElementById('profileName').value||'').trim();
-}
-function saveProfile(){
-  const name = readProfileName();
-  if(!name){ alert('프로필 이름을 입력하세요.'); return; }
-  localStorage.setItem('ESOP_PROFILE_'+name, JSON.stringify(getAppState()));
-  alert('저장되었습니다.');
-}
-function loadProfile(){
-  const name = readProfileName();
-  if(!name){ alert('불러올 프로필 이름을 입력하세요.'); return; }
-  const raw = localStorage.getItem('ESOP_PROFILE_'+name);
-  if(!raw){ alert('해당 이름의 프로필이 없습니다.'); return; }
-  setAppState(JSON.parse(raw));
-}
-function deleteProfile(){
-  const name = readProfileName();
-  if(!name){ alert('삭제할 프로필 이름을 입력하세요.'); return; }
-  if(!localStorage.getItem('ESOP_PROFILE_'+name)){ alert('해당 이름의 프로필이 없습니다.'); return; }
-  if(confirm('['+name+'] 프로필을 삭제할까요?')){
-    localStorage.removeItem('ESOP_PROFILE_'+name);
-    alert('삭제되었습니다.');
-  }
-}
-document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('btnSaveProfile').addEventListener('click', saveProfile);
-  document.getElementById('btnLoadProfile').addEventListener('click', loadProfile);
-  document.getElementById('btnDeleteProfile').addEventListener('click', deleteProfile);
-});
 </script>
 </body>
 </html>
