@@ -1,13 +1,14 @@
-<!doctype html>
+<!DOCTYPE html>
+
 <html lang="ko">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>우리사주 간이계산기 Beta</title>
-  <meta name="description" content="우리사주 인출 시 세후가치·순이익(근사)까지 계산하는 멀티-로트 계산기" />
-  <script src="https://cdn.tailwindcss.com">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>우리사주 간이계산기 Beta</title>
+<meta content="우리사주 인출 시 세후가치·순이익(근사)까지 계산하는 멀티-로트 계산기" name="description"/>
+<script src="https://cdn.tailwindcss.com">
 </script>
-  <style>
+<style>
     body { font-family: 'Pretendard','Apple SD Gothic Neo',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,'Noto Sans',sans-serif; }
     input.num { text-align:right; font-variant-numeric: tabular-nums; }
     input[disabled] { background:#ecfdf5!important; color:#6b7280!important; cursor:not-allowed; }
@@ -18,191 +19,177 @@
   </style>
 </head>
 <body class="bg-emerald-50 text-gray-900">
-  <header class="sticky top-0 z-10 bg-gradient-to-r from-emerald-200 to-emerald-100 backdrop-blur border-b border-emerald-300 shadow-sm">
-    <div class="mx-auto max-w-6xl px-5 py-3 flex items-center justify-between">
-      <h1 class="text-lg font-extrabold text-emerald-800 tracking-tight">
+<header class="sticky top-0 z-10 bg-gradient-to-r from-emerald-200 to-emerald-100 backdrop-blur border-b border-emerald-300 shadow-sm">
+<div class="mx-auto max-w-6xl px-5 py-3 flex items-center justify-between">
+<h1 class="text-lg font-extrabold text-emerald-800 tracking-tight">
         우리사주 간이계산기 <span class="text-xs text-emerald-700 align-top">Beta</span>
-      </h1>
-        
+</h1>
 <div class="mt-2 mb-4 flex flex-wrap items-center gap-2">
-  <button id="btnExport" class="rounded-xl bg-emerald-600 text-white px-3 py-2 shadow">내보내기</button>
-  <button id="btnImport" class="rounded-xl bg-emerald-500 text-white px-3 py-2 shadow">가져오기</button>
-  <input id="importFile" type="file" accept="application/json" class="hidden" />
+<button class="rounded-xl bg-emerald-600 text-white px-3 py-2 shadow" id="btnExport">내보내기</button>
+<button class="rounded-xl bg-emerald-500 text-white px-3 py-2 shadow" id="btnImport">가져오기</button>
+<input accept="application/json" class="hidden" id="importFile" type="file"/>
 </div>
-
-
-      <a href="#how" class="text-sm text-emerald-800 hover:text-emerald-900">로직/주의사항 💡</a>
-    </div>
-    <div class="mx-auto max-w-6xl px-5 pb-3">
-      <div class="rounded-2xl border border-emerald-300 bg-emerald-100/70 text-emerald-900 text-xs p-3 leading-5 shadow-sm">
-        <span class="font-semibold">📋 준비물:</span>
+<a class="text-sm text-emerald-800 hover:text-emerald-900" href="#how">로직/주의사항 💡</a>
+</div>
+<div class="mx-auto max-w-6xl px-5 pb-3">
+<div class="rounded-2xl border border-emerald-300 bg-emerald-100/70 text-emerald-900 text-xs p-3 leading-5 shadow-sm">
+<span class="font-semibold">📋 준비물:</span>
         우리사주 상세내역, 직전연도 근로소득원천징수영수증, (있다면) 종합소득세 신고내역
       </div>
-    </div>
-  </header>
-
-  <main class="mx-auto max-w-6xl px-5 py-6 space-y-6">
-    <!-- 인출 로트 입력 (Full width) -->
-    <section class="mint-card p-5">
-      <div class="flex items-center justify-between">
-        <h2 class="mb-3 text-lg font-semibold text-emerald-800">인출 로트 입력 (여러 행 추가 가능) 📋</h2>
-        <div class="flex gap-2">
-          <button id="addRow" class="mint-btn">+ 행 추가</button>
-          <button id="clearRows" class="mint-btn">🧹 행 모두 삭제</button>
-        </div>
-      </div>
-      <div class="overflow-auto">
-        <table class="w-full text-xs tbl">
-          <thead class="text-emerald-800">
-            <tr>
-              <th class="text-left px-2 py-1.5">#</th>
-              <th class="text-left px-2 py-1.5 w-24">취득일자</th>
-              <th class="text-left px-2 py-1.5">출연구분</th>
-              <th class="text-right px-2 py-1.5 w-20">취득단가</th>
-              <th class="text-right px-2 py-1.5 w-20">실제 납입단가</th>
-              <th class="text-right px-2 py-1.5">인출주식수</th>
-              <th class="text-right px-2 py-1.5"><div>보유기간</div><div class="text-[10px] text-gray-500">(의무예탁 제외)</div></th>
-              <th class="text-center px-2 py-1.5">과세구분 <span class="relative group cursor-help">❓<span class="absolute hidden group-hover:block bg-white text-gray-700 border border-gray-300 rounded-md p-2 text-[11px] w-max left-1/2 -translate-x-1/2 mt-1 shadow">비과세 : 과거 출연 당시 400만원 한도 초과분</span></span></th>
-              <th class="text-right px-2 py-1.5">비과세율</th>
-              <th class="text-right px-2 py-1.5">과세단가</th>
-              <th class="text-right px-2 py-1.5">과세 금액</th>
-              <th class="text-center px-2 py-1.5">작업</th>
-            </tr>
-          </thead>
-          <tbody id="lotBody"></tbody>
-        </table>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
-        <label class="grid grid-cols-1 gap-1">
-          <span class="text-sm text-gray-700">의무예탁기간(공통)</span>
-          <div class="flex items-center gap-2">
-            <input id="escrowYears" type="text" class="num w-24 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" value="1" />
-            <span class="text-xs text-gray-500">년</span>
-          </div>
-        </label>
-        <label class="grid grid-cols-1 gap-1">
-          <span class="text-sm text-gray-700">인출일자(공통)</span>
-          <input id="wdDate" type="date" class="w-full sm:w-40 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" />
-        </label>
-        <label class="grid grid-cols-1 gap-1">
-          <span class="text-sm text-gray-700">인출일자 시가(공통)</span>
-          <div class="flex items-center gap-2">
-            <input id="fmvAtWithdraw" type="text" class="num w-40 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" value="0" />
-            <span class="text-xs text-gray-500">원/주</span>
-          </div>
-        </label>
-      </div>
-      <p class="text-xs text-emerald-700 mt-2">※ 각 행은 동일 취득일·단가에서 인출하는 수량을 의미합니다.</p>
-    </section>
-
-    <section class="grid grid-cols-1 gap-6 md:grid-cols-2">
-      <!-- 좌: 급여 & 공제 -->
-      <div class="space-y-6">
-        <div class="mint-card p-5">
-          <h2 class="mb-3 text-lg font-semibold text-emerald-800">급여 정보 🧾</h2>
-          <div class="space-y-2">
-            <label class="flex items-center justify-between gap-3">
-              <span class="text-sm text-gray-700 whitespace-nowrap">직전연도 총급여액</span>
-              <input id="prevYearSalary" type="text" class="num w-56 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" value="0" />
-            </label>
-            <label class="flex items-center justify-between gap-3">
-              <span class="text-sm text-gray-700">올해 예상 총급여액</span>
-              <input id="currYearSalary" type="text" class="num w-56 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" value="0" />
-            </label>
-            <label class="flex items-start justify-between gap-3">
-              <span class="text-sm text-gray-700">근로 외 종합소득금액</span>
-              <input id="otherIncome" type="text" class="num w-56 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" value="0" />
-            </label>
-            <label class="flex items-center justify-between gap-3">
-              <span class="text-sm text-gray-700">중소기업 여부 🌱</span>
-              <input id="isSME" type="checkbox" class="h-5 w-5 accent-emerald-500" />
-            </label>
-            <p class="text-xs text-emerald-700 leading-5 mt-1">※ 총급여액은 급여명세서의 <strong>총지급액</strong>(성과급 포함) 기준 근사치예요.</p>
-          </div>
-        </div>
-
-        <div class="mint-card p-5">
-          <div class="flex items-center justify-between">
-            <h2 class="mb-3 text-lg font-semibold text-emerald-800">공제(근사) 설정 🧮</h2>
-            <button id="toggleSI" class="mint-btn text-xs">4대보험율 편집</button>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-            <label class="flex items-center justify-between gap-3">
-              <span class="text-gray-700">기본공제 인원(본인 포함)</span>
-              <input id="basicDeductCount" type="text" class="num w-32 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" value="1" />
-            </label>
-            <label class="flex items-center justify-between gap-3">
-              <span class="text-gray-700">국민연금율(근로자, %)</span>
-              <input id="rateNP" type="text" class="num w-32 rounded-xl border border-emerald-300 px-3 py-2" value="4.5" disabled />
-            </label>
-            <label class="flex items-center justify-between gap-3">
-              <span class="text-gray-700">건강보험율(근로자, %)</span>
-              <input id="rateHI" type="text" class="num w-32 rounded-xl border border-emerald-300 px-3 py-2" value="3.545" disabled />
-            </label>
-            <label class="flex items-center justify-between gap-3">
-              <span class="text-gray-700">장기요양(건보의 %, 근로자)</span>
-              <input id="rateLTC" type="text" class="num w-32 rounded-xl border border-emerald-300 px-3 py-2" value="12.95" disabled />
-            </label>
-            <label class="flex items-center justify-between gap-3">
-              <span class="text-gray-700">고용보험율(근로자, %)</span>
-              <input id="rateEI" type="text" class="num w-32 rounded-xl border border-emerald-300 px-3 py-2" value="0.9" disabled />
-            </label>
-
-            <div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
-              <label class="flex items-center justify-between gap-3">
-                <span class="text-gray-700">우리사주 출연 소득공제 (원)</span>
-                <input id="esopDeduct" type="text" class="num w-40 rounded-xl border border-emerald-300 px-3 py-2" value="0" />
-              </label>
-              <label class="flex items-center justify-between gap-3">
-                <span class="text-gray-700">기타 소득공제 (원)</span>
-                <input id="otherDeductions" type="text" class="num w-40 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" value="0" />
-              </label>
-            </div>
-          </div>
-
-          <div class="mt-4 flex flex-wrap items-center gap-2 justify-between">
-            <button id="resetBtn" class="mint-btn text-xs md:text-sm">🔄 입력 초기화</button>
-            <div class="flex items-center gap-2">
-              <button id="copyUrlBtn" class="mint-btn text-xs md:text-sm">🔗 입력 공유 링크</button>
-              <button id="downloadBtn" class="mint-btn text-xs md:text-sm">📥 결과 CSV</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 우: 결과 -->
-      <div class="space-y-6">
-        <div class="mint-card p-5">
-          <h3 class="mb-2 font-semibold text-emerald-800">인출 시 근로소득 합산 금액 (로트 합계) 💰</h3>
-          <div id="withdrawBox" class="text-sm text-gray-800"></div>
-        </div>
-
-        <div class="mint-card p-5">
-          <h3 class="mb-2 font-semibold text-emerald-800">세율 구간 & 결론(세후가치/순이익, 근사) 📈</h3>
-          <div id="taxbox" class="text-sm text-gray-800"></div>
-        </div>
-
-        <div class="mint-card p-5 text-sm leading-6 text-emerald-800">
-          <div class="text-xs text-emerald-700">※ 본 계산기는 참고용이며, 실제 신고는 회사 규정 및 세무전문가 확인이 필요합니다.</div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Notes -->
-    <section id="how" class="mt-2 mint-card p-5">
-      <h3 class="mb-2 text-base font-semibold text-emerald-800">📘 계산 로직 요약 & 주의사항</h3>
-      <ul class="list-disc pl-5 text-sm text-gray-700 space-y-1">
-        <li>각 로트 과세단가 = <strong>min(취득단가, 인출일자 시가)</strong></li>
-        <li>비과세율(의무예탁 종료 후 보유기간 기준): <strong>2~4년 미만 50%</strong>, <strong>4년 이상 75%</strong>, <strong>6년 이상 100%(중소기업만)</strong></li>
-        <li>추가세금(근사) = 인출분 근로소득 합계 × 추정 한계세율(지방세 포함)</li>
-        <li>세후 가치(근사) = 인출주식 시가가치 − 추가세금(근사)</li>
-        <li>순이익(근사) = 세후 가치 − 실제 납입원가(로트별 납입단가×수량 합)</li>
-      </ul>
-    </section>
-  </main>
-
-  <script>
+</div>
+</header>
+<main class="mx-auto max-w-6xl px-5 py-6 space-y-6">
+<!-- 인출 로트 입력 (Full width) -->
+<section class="mint-card p-5">
+<div class="flex items-center justify-between">
+<h2 class="mb-3 text-lg font-semibold text-emerald-800">인출 로트 입력 (여러 행 추가 가능) 📋</h2>
+<div class="flex gap-2">
+<button class="mint-btn" id="addRow">+ 행 추가</button>
+<button class="mint-btn" id="clearRows">🧹 행 모두 삭제</button>
+</div>
+</div>
+<div class="overflow-auto">
+<table class="w-full text-xs tbl">
+<thead class="text-emerald-800">
+<tr>
+<th class="text-left px-2 py-1.5">#</th>
+<th class="text-left px-2 py-1.5 w-24">취득일자</th>
+<th class="text-left px-2 py-1.5">출연구분</th>
+<th class="text-right px-2 py-1.5 w-20">취득단가</th>
+<th class="text-right px-2 py-1.5 w-20">실제 납입단가</th>
+<th class="text-right px-2 py-1.5">인출주식수</th>
+<th class="text-right px-2 py-1.5"><div>보유기간</div><div class="text-[10px] text-gray-500">(의무예탁 제외)</div></th>
+<th class="text-center px-2 py-1.5">과세구분 <span class="relative group cursor-help">❓<span class="absolute hidden group-hover:block bg-white text-gray-700 border border-gray-300 rounded-md p-2 text-[11px] w-max left-1/2 -translate-x-1/2 mt-1 shadow">비과세 : 과거 출연 당시 400만원 한도 초과분</span></span></th>
+<th class="text-right px-2 py-1.5">비과세율</th>
+<th class="text-right px-2 py-1.5">과세단가</th>
+<th class="text-right px-2 py-1.5">과세 금액</th>
+<th class="text-center px-2 py-1.5">작업</th>
+</tr>
+</thead>
+<tbody id="lotBody"></tbody>
+</table>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+<label class="grid grid-cols-1 gap-1">
+<span class="text-sm text-gray-700">의무예탁기간(공통)</span>
+<div class="flex items-center gap-2">
+<input class="num w-24 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" id="escrowYears" type="text" value="1"/>
+<span class="text-xs text-gray-500">년</span>
+</div>
+</label>
+<label class="grid grid-cols-1 gap-1">
+<span class="text-sm text-gray-700">인출일자(공통)</span>
+<input class="w-full sm:w-40 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" id="wdDate" type="date"/>
+</label>
+<label class="grid grid-cols-1 gap-1">
+<span class="text-sm text-gray-700">인출일자 시가(공통)</span>
+<div class="flex items-center gap-2">
+<input class="num w-40 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" id="fmvAtWithdraw" type="text" value="0"/>
+<span class="text-xs text-gray-500">원/주</span>
+</div>
+</label>
+</div>
+<p class="text-xs text-emerald-700 mt-2">※ 각 행은 동일 취득일·단가에서 인출하는 수량을 의미합니다.</p>
+</section>
+<section class="grid grid-cols-1 gap-6 md:grid-cols-2">
+<!-- 좌: 급여 & 공제 -->
+<div class="space-y-6">
+<div class="mint-card p-5">
+<h2 class="mb-3 text-lg font-semibold text-emerald-800">급여 정보 🧾</h2>
+<div class="space-y-2">
+<label class="flex items-center justify-between gap-3">
+<span class="text-sm text-gray-700 whitespace-nowrap">직전연도 총급여액</span>
+<input class="num w-56 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" id="prevYearSalary" type="text" value="0"/>
+</label>
+<label class="flex items-center justify-between gap-3">
+<span class="text-sm text-gray-700">올해 예상 총급여액</span>
+<input class="num w-56 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" id="currYearSalary" type="text" value="0"/>
+</label>
+<label class="flex items-start justify-between gap-3">
+<span class="text-sm text-gray-700">근로 외 종합소득금액</span>
+<input class="num w-56 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" id="otherIncome" type="text" value="0"/>
+</label>
+<label class="flex items-center justify-between gap-3">
+<span class="text-sm text-gray-700">중소기업 여부 🌱</span>
+<input class="h-5 w-5 accent-emerald-500" id="isSME" type="checkbox"/>
+</label>
+<p class="text-xs text-emerald-700 leading-5 mt-1">※ 총급여액은 급여명세서의 <strong>총지급액</strong>(성과급 포함) 기준 근사치예요.</p>
+</div>
+</div>
+<div class="mint-card p-5">
+<div class="flex items-center justify-between">
+<h2 class="mb-3 text-lg font-semibold text-emerald-800">공제(근사) 설정 🧮</h2>
+<button class="mint-btn text-xs" id="toggleSI">4대보험율 편집</button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+<label class="flex items-center justify-between gap-3">
+<span class="text-gray-700">기본공제 인원(본인 포함)</span>
+<input class="num w-32 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" id="basicDeductCount" type="text" value="1"/>
+</label>
+<label class="flex items-center justify-between gap-3">
+<span class="text-gray-700">국민연금율(근로자, %)</span>
+<input class="num w-32 rounded-xl border border-emerald-300 px-3 py-2" disabled="" id="rateNP" type="text" value="4.5"/>
+</label>
+<label class="flex items-center justify-between gap-3">
+<span class="text-gray-700">건강보험율(근로자, %)</span>
+<input class="num w-32 rounded-xl border border-emerald-300 px-3 py-2" disabled="" id="rateHI" type="text" value="3.545"/>
+</label>
+<label class="flex items-center justify-between gap-3">
+<span class="text-gray-700">장기요양(건보의 %, 근로자)</span>
+<input class="num w-32 rounded-xl border border-emerald-300 px-3 py-2" disabled="" id="rateLTC" type="text" value="12.95"/>
+</label>
+<label class="flex items-center justify-between gap-3">
+<span class="text-gray-700">고용보험율(근로자, %)</span>
+<input class="num w-32 rounded-xl border border-emerald-300 px-3 py-2" disabled="" id="rateEI" type="text" value="0.9"/>
+</label>
+<div class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
+<label class="flex items-center justify-between gap-3">
+<span class="text-gray-700">우리사주 출연 소득공제 (원)</span>
+<input class="num w-40 rounded-xl border border-emerald-300 px-3 py-2" id="esopDeduct" type="text" value="0"/>
+</label>
+<label class="flex items-center justify-between gap-3">
+<span class="text-gray-700">기타 소득공제 (원)</span>
+<input class="num w-40 rounded-xl border border-emerald-300 px-3 py-2 cute-focus" id="otherDeductions" type="text" value="0"/>
+</label>
+</div>
+</div>
+<div class="mt-4 flex flex-wrap items-center gap-2 justify-between">
+<button class="mint-btn text-xs md:text-sm" id="resetBtn">🔄 입력 초기화</button>
+<div class="flex items-center gap-2">
+<button class="mint-btn text-xs md:text-sm" id="copyUrlBtn">🔗 입력 공유 링크</button>
+<button class="mint-btn text-xs md:text-sm" id="downloadBtn">📥 결과 CSV</button>
+</div>
+</div>
+</div>
+</div>
+<!-- 우: 결과 -->
+<div class="space-y-6">
+<div class="mint-card p-5">
+<h3 class="mb-2 font-semibold text-emerald-800">인출 시 근로소득 합산 금액 (로트 합계) 💰</h3>
+<div class="text-sm text-gray-800" id="withdrawBox"></div>
+</div>
+<div class="mint-card p-5">
+<h3 class="mb-2 font-semibold text-emerald-800">세율 구간 &amp; 결론(세후가치/순이익, 근사) 📈</h3>
+<div class="text-sm text-gray-800" id="taxbox"></div>
+</div>
+<div class="mint-card p-5 text-sm leading-6 text-emerald-800">
+<div class="text-xs text-emerald-700">※ 본 계산기는 참고용이며, 실제 신고는 회사 규정 및 세무전문가 확인이 필요합니다.</div>
+</div>
+</div>
+</section>
+<!-- Notes -->
+<section class="mt-2 mint-card p-5" id="how">
+<h3 class="mb-2 text-base font-semibold text-emerald-800">📘 계산 로직 요약 &amp; 주의사항</h3>
+<ul class="list-disc pl-5 text-sm text-gray-700 space-y-1">
+<li>각 로트 과세단가 = <strong>min(취득단가, 인출일자 시가)</strong></li>
+<li>비과세율(의무예탁 종료 후 보유기간 기준): <strong>2~4년 미만 50%</strong>, <strong>4년 이상 75%</strong>, <strong>6년 이상 100%(중소기업만)</strong></li>
+<li>추가세금(근사) = 인출분 근로소득 합계 × 추정 한계세율(지방세 포함)</li>
+<li>세후 가치(근사) = 인출주식 시가가치 − 추가세금(근사)</li>
+<li>순이익(근사) = 세후 가치 − 실제 납입원가(로트별 납입단가×수량 합)</li>
+</ul>
+</section>
+</main>
+<script>
     const $ = (id) => document.getElementById(id);
     const toNumber = (x) => {
       const s = String(x ?? '').replace(/[^0-9.-]/g,'');
@@ -694,5 +681,12 @@ function bindActions(){
 hookExportImport();
   
 </script>
+
+<footer class="text-center text-sm text-emerald-800 py-6">
+  📩 문의사항은 블로그 댓글로 남겨주세요 👉 
+  <a class="text-emerald-700 underline hover:text-emerald-900" href="https://blog.naver.com/newleaftax/224071942992" target="_blank">
+    https://blog.naver.com/newleaftax/224071942992
+  </a>
+</footer>
 </body>
 </html>
